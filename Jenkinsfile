@@ -4,9 +4,16 @@ pipeline{
 
   agent any
   
+  parameters{
+    
+    choice(name: 'action', choices: 'create\ndelete', description: 'choose create or destroy' )
+    
+  }
+  
   stages{
     
       stage('Git Checkout'){
+      when {expressions { params.action == 'create} } 
         
         steps{
           
@@ -18,7 +25,7 @@ pipeline{
         
       }
     stage('Unit test maven'){
-        
+    when {expressions { params.action == 'create} }   
         steps{  
           script{
             mvnTest()
@@ -27,7 +34,7 @@ pipeline{
         
       }
     stage('maven integration test'){
-        
+    when {expressions { params.action == 'create} }   
         steps{  
           script{
             mvnIntegrationTest()
