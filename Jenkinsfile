@@ -10,20 +10,16 @@ pipeline{
         
         steps{
           
-          script{
-          
             gitCheckout(
               branch: "main",
               url: "https://github.com/Ganapath1/gana_java_app.git"
             )
           }
-        }
         
       }
     stage('Unit test maven'){
         
-        steps{
-          
+        steps{  
           script{
             mvnTest()
           }
