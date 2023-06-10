@@ -1,3 +1,5 @@
+@Library('my-shared-library') _
+
 pipeline{
 
   agent any
@@ -11,7 +13,7 @@ pipeline{
           script{
           
             gitCheckout(
-              branch: "main"
+              branch: "main",
               url: "https://github.com/Ganapath1/gana_java_app.git"
             )
           }
