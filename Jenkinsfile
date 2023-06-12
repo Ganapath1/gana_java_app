@@ -52,6 +52,15 @@ pipeline{
         }
         
       }
+    stage('quality gate status: sonarqube'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+            def SonarQubecredentialsId = 'sonarqube-api'
+            qualityGateStatus(SonarQubecredentialsId)
+          }
+        }
+      }
     
     stage('mvn build'){
     when { expression { params.action == 'create'} }   
