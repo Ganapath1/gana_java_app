@@ -7,7 +7,9 @@ pipeline{
   parameters{
     
     choice(name: 'action', choices: 'create\ndelete', description: 'choose create or destroy' )
-    
+    string(name:'ImageName', description:'name of the docker build', defaultValue:'java_app')
+    string(name:'ImageTag', description:'image tag of the docker build', defaultValue:'v1')
+    string(name:'DockerHubUser', description:'username of the docker', defaultValue:'ganapath1')
   }
   
   stages{
@@ -66,6 +68,14 @@ pipeline{
         steps{  
           script{
             mvnBuild()
+          }
+        }
+      }
+    stage('Docker build'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+            dockerBuild("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
           }
         }
       }
