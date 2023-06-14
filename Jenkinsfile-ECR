@@ -10,6 +10,7 @@ pipeline{
     string(name:'aws_account_id', description:'account id of aws', defaultValue:'732860480974')
     string(name:'region', description:'aws region', defaultValue:'us-east-1')
     string(name:'ecrRepoUser', description:'name of the ecr repo', defaultValue:'ganapath1')
+    string(name:'cluster', description:'name of the eks cluster', defaultValue:'demo-cluster')
   }
   environment{
     access_key = credentials('AWS_ACCESS_KEY_ID')
@@ -118,6 +119,44 @@ pipeline{
                   terraform apply -var 'access_key=$access_key' -var 'secret_key=$secret_key' -var 'region=${params.region}' --var-file=./config/terraform.tfvars --auto-approve
               """
             }
+          }
+        }
+      }
+      stage('connecting to eks'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+              sh """
+                aws configure set aws_access_key_id $access_key
+                aws configure set aws_secret_access_key_id $secret_key
+                aws configure set region ${params.region}
+                aws eks --region ${params.region} update-kubeconfig --name  ${params.cluster}
+              """
+          }
+        }
+      }
+      stage('deploying to eks'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+              sh """
+                def apply = false
+                try{
+                  input message: 'please confirm to deploy on eks', ok: 'Ready to apply the config ?'
+                  apply = true
+                }catch(err){
+                  apply = false
+                  currentBuild.result = 'UNSTABLE'
+                }
+                if (apply) {
+                  
+                  sh """
+                    
+                    kubectl apply -f.
+                  """
+                
+                }
+              """
           }
         }
       }
