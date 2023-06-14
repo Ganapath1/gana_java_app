@@ -139,7 +139,6 @@ pipeline{
     when { expression { params.action == 'create'} }   
         steps{  
           script{
-              sh """
                 def apply = false
                 try{
                   input message: 'please confirm to deploy on eks', ok: 'Ready to apply the config ?'
@@ -156,7 +155,6 @@ pipeline{
                   """
                 
                 }
-              """
           }
         }
       }
