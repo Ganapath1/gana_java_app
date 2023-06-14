@@ -10,7 +10,7 @@ pipeline{
     string(name:'aws_account_id', description:'account id of aws', defaultValue:'732860480974')
     string(name:'region', description:'aws region', defaultValue:'us-east-1')
     string(name:'ecrRepoUser', description:'name of the ecr repo', defaultValue:'ganapath1')
-    string(name:'cluster', description:'name of the eks cluster', defaultValue:'demo-cluster')
+    string(name:'cluster', description:'name of the eks cluster', defaultValue:'demo-cluster1')
   }
   environment{
     access_key = credentials('AWS_ACCESS_KEY_ID')
