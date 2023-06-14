@@ -11,6 +11,10 @@ pipeline{
     string(name:'region', description:'aws region', defaultValue:'us-east-1')
     string(name:'ecrRepoUser', description:'name of the ecr repo', defaultValue:'ganapath1')
   }
+  environment{
+    access_key = credentials('AWS_ACCESS_KEY_ID')
+    secret_key = credentials('AWS_SECRET_KEY_ID')
+  }
   
   stages{
     
@@ -63,43 +67,57 @@ pipeline{
 //           }
 //         }
 //       }    
-    stage('mvn build'){
+//   stage('mvn build'){
+//    when { expression { params.action == 'create'} }   
+//        steps{  
+//          script{
+//            mvnBuild()
+//          }
+//        }
+//      }
+//      stage('Docker Image Build for ECR'){
+//    when { expression { params.action == 'create'} }   
+//        steps{  
+//          script{
+//            dockerBuild("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+//         }
+//        }
+//      }
+//      stage('Docker Image scan for ECR'){
+//    when { expression { params.action == 'create'} }   
+ //       steps{  
+ //         script{
+ //           trivy("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+ //         }
+ //       }
+ //    }
+ //     stage('Docker Image push for ECR'){
+ //   when { expression { params.action == 'create'} }   
+ //       steps{  
+ //         script{
+ //           dockerImagePush("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+ //         }
+ //      }
+ //     }
+ //     stage('Docker Image cleanup'){
+ //   when { expression { params.action == 'create'} }   
+ //       steps{  
+ //         script{
+ //          dockerImageCleanUp("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+ //         }
+ //       }
+ //    }
+      stage('create eks cluster using terraform'){
     when { expression { params.action == 'create'} }   
         steps{  
           script{
-            mvnBuild()
-          }
-        }
-      }
-      stage('Docker Image Build for ECR'){
-    when { expression { params.action == 'create'} }   
-        steps{  
-          script{
-            dockerBuild("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
-          }
-        }
-      }
-      stage('Docker Image scan for ECR'){
-    when { expression { params.action == 'create'} }   
-        steps{  
-          script{
-            trivy("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
-          }
-        }
-      }
-      stage('Docker Image push for ECR'){
-    when { expression { params.action == 'create'} }   
-        steps{  
-          script{
-            dockerImagePush("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
-          }
-        }
-      }
-      stage('Docker Image cleanup'){
-    when { expression { params.action == 'create'} }   
-        steps{  
-          script{
-            dockerImageCleanUp("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+            dir ('eks_module'){
+              sh """
+                  terraform init 
+                  terraform plan -var 'access_key=$access_key' -var 'secret_key=$secret_key' -var 'region=${params.region}' --var-file=./config/terraform.tfvars
+                  terraform apply -var 'access_key=$access_key' -var 'secret_key=$secret_key' -var 'region=${params.region}' --var-file=./config/terraform.tfvars --auto-approve
+              ""'
+            }
           }
         }
       }
