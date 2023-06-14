@@ -7,9 +7,9 @@ pipeline{
   parameters{
     
     choice(name: 'action', choices: 'create\ndelete', description: 'choose create or destroy' )
-    string(name:'ImageName', description:'name of the docker build', defaultValue:'java_app')
-    string(name:'ImageTag', description:'image tag of the docker build', defaultValue:'v1')
-    string(name:'DockerHubUser', description:'username of the docker', defaultValue:'ganapath1')
+    string(name:'aws_account_id', description:'account id of aws', defaultValue:'732860480974')
+    string(name:'region', description:'aws region', defaultValue:'us-east-1')
+    string(name:'ecrRepoUser', description:'name of the ecr repo', defaultValue:'ganapath1')
   }
   
   stages{
@@ -71,11 +71,35 @@ pipeline{
           }
         }
       }
+      stage('Docker Image Build for ECR'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+            dockerBuild("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+          }
+        }
+      }
+      stage('Docker Image scan for ECR'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+            trivy("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+          }
+        }
+      }
+      stage('Docker Image push for ECR'){
+    when { expression { params.action == 'create'} }   
+        steps{  
+          script{
+            dockerImagePush("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
+          }
+        }
+      }
       stage('Docker Image cleanup'){
     when { expression { params.action == 'create'} }   
         steps{  
           script{
-            dockerImageCleanUp("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
+            dockerImageCleanUp("${params.aws_account_id}","${params.region}","${params.ecrRepoUser}")
           }
         }
       }
