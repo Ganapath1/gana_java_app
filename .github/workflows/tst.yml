@@ -1,0 +1,39 @@
+name: Copy Code and Create Pull Request
+on: workflow_dispatch
+jobs:
+  copy-code-and-create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      # - name: Fetch remote branch
+      #   run: git fetch origin feature-branch-c:feature-branch-c
+      - name: Create new branch
+        run: git checkout -b feature-branch-e  # replace 'feature-branch' with your branch name
+      - name: Copy code from one folder to another
+        run: |
+          mkdir -p destination
+          cp -r env/* destination/
+        #working-directory: ./firstrepository/  # specify the path to your repository
+      - name: Commit changes
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git add .
+          git commit -m "Copy code from source to destination folder"
+      # - name: Pull latest changes from remote repository
+      #   run: |
+      #     git config pull.rebase true
+      #     git pull origin feature-branch-c --allow-unrelated-histories
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: feature-branch-e  # replace 'feature-branch' with your branch name
+      - name: Open Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature-branch-e
+          base: main  # replace 'main' with the base branch you want to target
+          title: "Copy Code and Create Pull Request"
+          body: "This pull request was automatically created to copy code from source to destination folder."
